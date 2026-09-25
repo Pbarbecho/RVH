@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-09-25 03:22:07 by Eclipse SUMO sumo Version 1.12.0
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/vanet/results/cuenca/cuenca.net.xml"/>
+        <route-files value="/home/vanet/results/cuenca/cuenca.rou.xml"/>
+        <additional-files value="/home/vanet/results/cuenca/cuenca.poly.xml"/>
+    </input>
+
+    <output>
+        <emission-output value="/home/vanet/results/cuenca/co2.xml"/>
+        <fcd-output value="/home/vanet/results/cuenca/fcd.xml"/>
+        <tripinfo-output value="/home/vanet/results/cuenca/tripinfo.xml"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="0.100000"/>
+    </time>
+
+    <processing>
+        <ignore-route-errors value="true"/>
+    </processing>
+
+    <report>
+        <verbose value="true"/>
+        <no-warnings value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+    <emissions>
+        <device.emissions.probability value="1"/>
+    </emissions>
+
+    <traci_server>
+        <remote-port value="3400"/>
+        <num-clients value="2"/>
+    </traci_server>
+
+    <random_number>
+        <seed value="10"/>
+    </random_number>
+
+    <gui_only>
+        <quit-on-end value="true"/>
+        <start value="true"/>
+        <tracker-interval value="0.100000"/>
+    </gui_only>
+
+</configuration>
+-->
+
+<tripinfos xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/tripinfo_file.xsd">
+</tripinfos>
