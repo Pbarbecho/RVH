@@ -52,8 +52,8 @@ services:
     # de ns-3 (1-3 h nativo) se multiplica varias veces o falla. Cambiarla
     # despues de construir obliga a reconstruir desde cero.
     # -------------------------------------------------------------------
-    platform: linux/amd64          # ACTIVA: PC Windows/Linux x86_64
-    #platform: linux/arm64        # Mac Apple Silicon (descomentar y comentar la de arriba)
+    #platform: linux/amd64          # ACTIVA: PC Windows/Linux x86_64
+    platform: linux/arm64        # Mac Apple Silicon (descomentar y comentar la de arriba)
 
     container_name: van3twin
     hostname: van3twin
@@ -198,8 +198,8 @@ services:
       APP_SUMO_ORDER: "2"             # ns-3 es el cliente 1; el visor, el 2
       # Escenario Cuenca (copiar mapa_cuenca/cuenca a results/: queda en
       # /replay dentro del backend). Escenario EVA por defecto:
-      APP_NET_FILE: /ns3/ns-3-dev/src/automotive/examples/sumo_files_v2v_map/map.net.xml
-      #APP_NET_FILE: /replay/cuenca/cuenca.net.xml
+      #APP_NET_FILE: /ns3/ns-3-dev/src/automotive/examples/sumo_files_v2v_map/map.net.xml
+      APP_NET_FILE: /replay/cuenca/cuenca.net.xml
       APP_POLY_FILE: /no_poly.xml     # inexistente a propósito: evita el fallback al .sumocfg
       APP_STEP_LENGTH: "0.5"          # seg simulados por frame; 0.5 + interpolación en el
                                       # frontend = movimiento fluido (1.0 se veía a saltos)
