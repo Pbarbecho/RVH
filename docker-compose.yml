@@ -204,6 +204,14 @@ services:
       APP_STEP_LENGTH: "0.5"          # seg simulados por frame; 0.5 + interpolación en el
                                       # frontend = movimiento fluido (1.0 se veía a saltos)
       APP_MAX_FPS: "10"
+      # Conexión TraCI PERSISTENTE (app/live_hub.py del repo SUMO_GEO): el
+      # backend se engancha solo cuando ns-3 lanza SUMO y los navegadores solo
+      # se suscriben a ella. Recargar la página, abrir varias pestañas o
+      # relanzar ./ns3 run ya no rompe nada (SUMO con --num-clients no readmite
+      # clientes: antes cada recarga cerraba el cliente 2 y el visor moría).
+      # Sin visores conectados la corrida queda en espera (ns-3 no avanza a
+      # ciegas); poner "false" para que siga aunque nadie mire:
+      #APP_HOLD_WITHOUT_VIEWERS: "false"
       # replay offline (botón "Replay pcap" del visor): pcaps copiados a
       # ~/results tras la corrida (cp v2v-EVA-*.pcap ~/results/). Los .asn
       # para decodificar salen del volumen (APP_ASN_DIR por defecto).

@@ -139,6 +139,14 @@ docker compose exec van3twin bash -c 'cp ~/VaN3Twin/ns-3-dev/v2v-EVA-*.pcap ~/re
 # -> botón "Replay pcap" en http://localhost:8081 (el backend detecta los ficheros solos)
 ```
 
+El backend del visor mantiene **una única conexión TraCI** durante toda la
+corrida (cliente 2 de SUMO): se puede recargar el navegador, abrir varias
+pestañas o relanzar `./ns3 run` sin reiniciar los contenedores; el visor se
+engancha solo y muestra «esperando a SUMO» mientras ns-3 no ha arrancado.
+Play/pausa son globales (estado de la corrida, no de la pestaña) y, sin
+ninguna pestaña abierta, la corrida queda en espera. Estado del enlace:
+`curl localhost:8000/api/health`.
+
 El flujo completo (pasos A-B-C, modo paso a paso, panel PHY, RSSI real con
 `signal-rx.csv`, solución de problemas) está en
 `Intergracion SUMO 3D WEB VAN3TWIN/Manual_Simulacion_VaN3Twin_SUMO_GEO.pdf`;
