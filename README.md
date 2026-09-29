@@ -165,7 +165,8 @@ del fork VaN3TwinGEO):
   desactiva los pcap por nodo (su volumen crece con N²; sin ellos no hay
   mensajes V2X en vivo ni replay).
 
-Para actualizar una instalación existente:
+Para actualizar una instalación existente (manual paso a paso para
+alumnos: [`docs/ACTUALIZACION_2026-09.md`](docs/ACTUALIZACION_2026-09.md)):
 
 ```bash
 git pull
