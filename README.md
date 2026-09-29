@@ -147,6 +147,37 @@ Play/pausa son globales (estado de la corrida, no de la pestaña) y, sin
 ninguna pestaña abierta, la corrida queda en espera. Estado del enlace:
 `curl localhost:8000/api/health`.
 
+### Rendimiento y escalado (cientos de vehículos, mapas grandes) — 2026-09
+
+Revisión completa del visor y del acoplamiento con ns-3 (cifras y detalle en
+`docs/RENDIMIENTO_2026-09.md` del repo SUMO_GEO y `RENDIMIENTO_SUMO_GEO.md`
+del fork VaN3TwinGEO):
+
+* **Visor**: frame del backend 3× más rápido y 4-5× menos bytes por frame
+  (protocolo v2), un visor lento ya no frena el *lockstep*, índice pcap en vivo
+  incremental, vehículos glTF con atributos binarios, red vial en capas nativas
+  de MapLibre (solo se dibujan los tiles visibles), **Modo ligero** en el panel
+  (o `http://localhost:8081/?lite=1`) para portátiles con GPU integrada.
+* **ns-3**: `TraciClient` lee el estado de la flota por **suscripción** (0
+  round-trips por vehículo); el sensor SUMO y el `MetricSupervisor` dejan de
+  ser O(N²) en llamadas TraCI. `--ns3::TraciClient::UseSubscriptions=false`
+  restaura el comportamiento anterior. Con flotas grandes, `--pcap=false`
+  desactiva los pcap por nodo (su volumen crece con N²; sin ellos no hay
+  mensajes V2X en vivo ni replay).
+
+Para actualizar una instalación existente:
+
+```bash
+git pull
+docker compose --profile visor build --no-cache backend frontend   # visor nuevo
+docker compose --profile visor up -d
+# parches ns-3 en un volumen ya poblado (o reconstruir la imagen van3twin):
+docker compose exec van3twin bash -c 'cd ~/VaN3Twin && git pull && cd ns-3-dev && ./ns3 build'
+```
+
+Estado del enlace y coste por frame: `curl localhost:8000/api/health`
+(`sumo.frame_ms`, `sumo.dropped`).
+
 El flujo completo (pasos A-B-C, modo paso a paso, panel PHY, RSSI real con
 `signal-rx.csv`, solución de problemas) está en
 `Intergracion SUMO 3D WEB VAN3TWIN/Manual_Simulacion_VaN3Twin_SUMO_GEO.pdf`;
