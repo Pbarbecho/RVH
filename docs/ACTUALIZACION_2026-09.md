@@ -91,14 +91,6 @@ ficheros parcheados de `ns3-patches/` y lanza `./ns3 build` (solo recompila
 los módulos `traci` y `automotive`). Termina con
 `'build' finished successfully`.
 
-### Windows con PowerShell (sin WSL2)
-
-```powershell
-docker compose up -d
-docker compose exec -T van3twin bash -c "cd /home/vanet/VaN3Twin/ns-3-dev && tar cf /home/vanet/ns3-patches-backup.tar src/traci/model/traci-client.cc src/traci/model/traci-client.h src/automotive/model/Facilities/vdpTraci.cc src/automotive/model/Facilities/vdpTraci.h src/automotive/model/Facilities/caBasicService.cc src/automotive/model/utilities/sumo-sensor.cc src/automotive/model/Measurements/MetricSupervisor.cc src/automotive/examples/v2v-emergencyVehicleAlert-80211p.cc"
-docker compose cp ns3-patches/src/. van3twin:/home/vanet/VaN3Twin/ns-3-dev/src/
-docker compose exec -T van3twin bash -c "cd /home/vanet/VaN3Twin/ns-3-dev && ./ns3 build"
-```
 
 ### Notas
 
