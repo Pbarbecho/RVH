@@ -74,12 +74,15 @@ Debe devolver `"proto":2`. Si devuelve otra cosa, repite el paso con
 
 El árbol ns-3 de tu volumen **no es un repositorio git** (el instalador de
 VaN3Twin borra `.git`), así que los parches se copian con un script desde el
-host. Con el contenedor arrancado:
-
-### Mac, Linux o Windows con WSL2 / Git Bash
+host. Con el contenedor arrancado :
 
 ```bash
 docker compose up -d
+```
+
+### Desde otra terminal y desde el directorio van3twin ejecute:
+
+```bash
 ./tools/apply-ns3-patches.sh
 ```
 
