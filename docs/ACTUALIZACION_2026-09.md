@@ -145,9 +145,10 @@ Debe imprimir un número mayor que 0.
 
 - **Modo ligero** (casilla del panel o `http://localhost:8081/?lite=1`): menos
   GPU/CPU en portátiles con gráfica integrada. Se recuerda entre recargas.
-- **Cámara con el ratón**: botón 🖱 de la barra superior (arrastrar gira e
-  inclina; Shift+arrastrar desplaza). Sin activarlo: botón derecho +
-  arrastrar, Ctrl/⌘ + arrastrar o Alt/Option + arrastrar.
+- **Cámara con el ratón**: el modo cámara (botón 🖱 de la barra superior)
+  arranca activo: arrastrar gira e inclina, Shift+arrastrar desplaza el mapa.
+  Si lo desactivas, arrastrar desplaza y giras con botón derecho, Ctrl/⌘ o
+  Alt/Option + arrastrar. Ya no hay pad de inclinación.
 - **Recargar la página o abrir varias pestañas** no afecta a la simulación;
   una pestaña lenta ya no frena a ns-3 ni a las demás.
 - **Flotas grandes** (por ejemplo
