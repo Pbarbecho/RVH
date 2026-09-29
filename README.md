@@ -171,8 +171,11 @@ Para actualizar una instalación existente:
 git pull
 docker compose --profile visor build --no-cache backend frontend   # visor nuevo
 docker compose --profile visor up -d
-# parches ns-3 en un volumen ya poblado (o reconstruir la imagen van3twin):
-docker compose exec van3twin bash -c 'cd ~/VaN3Twin && git pull && cd ns-3-dev && ./ns3 build'
+# parches ns-3 en un volumen ya poblado (el árbol ns-3 del volumen NO es un
+# repo git: sandbox_builder.sh borra .git). Copia los 8 ficheros de
+# ns3-patches/ al contenedor, guarda los originales y recompila (10-30 min):
+./tools/apply-ns3-patches.sh
+# deshacer: ./tools/revert-ns3-patches.sh
 ```
 
 Estado del enlace y coste por frame: `curl localhost:8000/api/health`
