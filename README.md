@@ -179,6 +179,29 @@ docker compose --profile visor up -d
 # deshacer: ./tools/revert-ns3-patches.sh
 ```
 
+### Para los alumnos: cómo se actualiza el visor a partir de ahora
+
+Las imágenes del visor (`backend` y `frontend`) ya vienen construidas en
+GitHub Container Registry (`ghcr.io/pbarbecho/sumo-geo-backend` y
+`sumo-geo-frontend`, para PC y Mac Apple Silicon): el repo SUMO_GEO las publica
+automáticamente en cada cambio. Actualizar el visor es, sin compilar nada:
+
+```bash
+cd van3twin-docker
+git pull
+docker compose --profile visor pull backend frontend
+docker compose --profile visor up -d
+```
+
+Comprobación: `curl localhost:8000/api/health` debe devolver `"proto":2`, y
+`http://localhost:8081` se recarga con Ctrl+Shift+R (Cmd+Shift+R en Mac).
+
+Para fijar una versión concreta por curso, el profesor crea un tag `vX.Y.Z`
+en SUMO_GEO y los alumnos ponen `SUMO_GEO_TAG=vX.Y.Z` en el fichero `.env`
+(plantilla en `.env.example`). Sin `.env` se usa siempre la última (`main`).
+Construir las imágenes localmente sigue siendo posible con
+`docker-compose.build.yml` (sin acceso a GHCR o con un fork propio).
+
 Estado del enlace y coste por frame: `curl localhost:8000/api/health`
 (`sumo.frame_ms`, `sumo.dropped`).
 
