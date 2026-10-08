@@ -219,6 +219,90 @@ y ejecuta `docker compose --profile visor up -d`: el backend se recrea en
 segundos con el mapa nuevo (el resto de contenedores no se toca). Para volver
 al EVA, borra la línea y repite el `up -d`.
 
+### Escenario propio con realismo 3D: `build_city.sh`
+
+El realismo del visor (edificios con altura real, veredas con bordillo, pasos
+de cebra, zonas verdes, agua, aparcamientos y árboles) **no sale del mapa base
+del navegador: el backend lo lee de los propios ficheros SUMO** del escenario
+(`.net.xml` y `.poly.xml`). Por eso el flujo es siempre el mismo:
+**1) generar los ficheros SUMO, 2) apuntar el visor a ellos**. El script
+`scripts/build_city.sh` del repo SUMO_GEO genera esos ficheros **ya con la
+información que el visor necesita**. Una red hecha a mano con `netconvert` o
+con `osmWebWizard` corre igual en SUMO y en ns-3, pero el visor solo podrá
+dibujar una vereda genérica, sin cruces ni árboles.
+
+**1) Generar el escenario** (en tu PC/Mac, hace falta SUMO e internet):
+
+```bash
+git clone https://github.com/Pbarbecho/SUMO_GEO.git && cd SUMO_GEO
+pip3 install eclipse-sumo sumolib
+./scripts/build_city.sh "-79.010,-2.903,-79.000,-2.893" cuenca   # bbox = W,S,E,N
+```
+
+Pasos que hace y qué aporta cada uno al visor:
+
+| Paso | Herramienta | Fichero (`sumo/`) | Qué dibuja el visor con él |
+|---|---|---|---|
+| 1 Descarga OSM | `osmGet.py` | `cuenca_bbox.osm.xml` (guárdalo) | nada directamente; lo usan los pasos 2-3 |
+| 2 Red vial | `netconvert --tls.guess-signals --sidewalks.guess --crossings.guess` | `cuenca.net.xml` | calles, carriles, LOS, semáforos, **veredas reales** (carriles `allow="pedestrian"`) y **pasos de cebra** (`function="crossing"`) |
+| 3 Polígonos | `polyconvert --osm.keep-full-type` + `enrich_heights.py` | `cuenca.poly.xml` | **edificios 3D** con altura real, **zonas verdes / agua / aparcamientos** por subtipo OSM y **árboles** (los mapeados `natural.tree` más un relleno dentro de parques y bosques) |
+| 4 Demanda | `randomTrips.py` | `cuenca.rou.xml`, `cuenca.sumocfg` | demanda corta de prueba (600 s); sustituible por `gen_traffic.py` |
+
+**2) Copiar y apuntar el visor.** Copia `cuenca.net.xml`, `cuenca.poly.xml`,
+`cuenca.rou.xml` y `cuenca.sumocfg` a `results/cuenca/` de esta carpeta (se
+monta en `/replay` para el visor y en `~/results` dentro del contenedor ns-3)
+y pon en `.env`:
+
+```bash
+SUMO_GEO_NET=/replay/cuenca/cuenca.net.xml
+SUMO_GEO_POLY=/replay/cuenca/cuenca.poly.xml
+```
+
+`docker compose --profile visor up -d` y comprueba con
+`curl localhost:8000/api/meta`: debe mostrar conteos distintos de cero en
+`landuse`, `trees`, `sidewalks` y `crossings`. Un cero ahí significa que el
+fichero no trae ese dato, no que el visor falle.
+
+**Ya tengo results/cuenca de antes y no veo veredas ni árboles.** Es el caso
+habitual: la red se generó sin `--sidewalks.guess --crossings.guess` y los
+polígonos sin `--osm.keep-full-type`. No hace falta volver a bajar nada ni
+cambiar las rutas: estas dos órdenes funcionan **sin internet** y conservan
+los ids de las aristas, así que los `.rou.xml` y la corrida de ns-3 siguen
+valiendo (probado sobre la red de Cuenca: mismas 254 aristas antes y después;
+se añaden 792 carriles de vereda, 214 cruces y 336 áreas peatonales):
+
+```bash
+cd results/cuenca
+export SUMO_HOME=$(python3 -c "import os,sumo;print(os.path.dirname(sumo.__file__))")
+export PATH="$SUMO_HOME/bin:$PATH"
+# a) veredas y cruces sobre la red existente
+netconvert -s cuenca.net.xml --sidewalks.guess --crossings.guess -o cuenca_ped.net.xml
+mv cuenca_ped.net.xml cuenca.net.xml
+# b) polígonos con subtipo OSM completo + alturas, a partir del map.osm guardado
+polyconvert --osm-files map.osm --net-file cuenca.net.xml \
+  --type-file "$SUMO_HOME/data/typemap/osmPolyconvert.typ.xml" \
+  --osm.keep-full-type -o cuenca.poly.xml
+python3 /ruta/a/SUMO_GEO/scripts/enrich_heights.py map.osm cuenca.poly.xml
+docker compose --profile visor restart backend
+```
+
+Si no conservas el `map.osm`, vuelve a bajarlo con
+`osmGet.py --bbox=W,S,E,N` usando el `origBoundary` que aparece en la línea
+`<location>` del `.net.xml`.
+
+**3) Correr el mismo escenario en ns-3.** El ejemplo acepta la carpeta y el
+sumocfg por línea de órdenes, y `results/` está montado en el contenedor:
+
+```bash
+docker compose exec van3twin ./ns3 run "v2v-emergencyVehicleAlert-80211p \
+  --sumo-folder=/home/vanet/results/cuenca/ --mob-trace=cuenca.rou.xml \
+  --sumo-config=/home/vanet/results/cuenca/cuenca.sumocfg \
+  --sumo-gui=false --met-sup=true --num-traci-clients=2"
+```
+
+La red que corre ns-3 y la que dibuja el visor deben ser **el mismo fichero**;
+si mejoras la red con el paso anterior, hazlo antes de lanzar la simulación.
+
 Estado del enlace y coste por frame: `curl localhost:8000/api/health`
 (`sumo.frame_ms`, `sumo.dropped`).
 
