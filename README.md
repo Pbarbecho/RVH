@@ -208,7 +208,12 @@ Construir las imágenes localmente sigue siendo posible con
 
 ```bash
 SUMO_GEO_NET=/replay/cuenca/cuenca.net.xml
+SUMO_GEO_POLY=/replay/cuenca/cuenca.poly.xml
 ```
+
+La segunda línea añade los edificios 3D, las zonas verdes, el agua, los
+aparcamientos y los árboles del escenario (el EVA no trae polígonos, así que
+en ese mapa solo se ven las veredas y las marcas viales).
 
 y ejecuta `docker compose --profile visor up -d`: el backend se recrea en
 segundos con el mapa nuevo (el resto de contenedores no se toca). Para volver
