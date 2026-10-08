@@ -202,6 +202,18 @@ en SUMO_GEO y los alumnos ponen `SUMO_GEO_TAG=vX.Y.Z` en el fichero `.env`
 Construir las imágenes localmente sigue siendo posible con
 `docker-compose.build.yml` (sin acceso a GHCR o con un fork propio).
 
+**Mapa del visor.** Por defecto el visor dibuja el mapa del ejemplo EVA
+(`sumo_files_v2v_map`). Si vas a usar el escenario de Cuenca, crea un fichero
+`.env` en esta carpeta con
+
+```bash
+SUMO_GEO_NET=/replay/cuenca/cuenca.net.xml
+```
+
+y ejecuta `docker compose --profile visor up -d`: el backend se recrea en
+segundos con el mapa nuevo (el resto de contenedores no se toca). Para volver
+al EVA, borra la línea y repite el `up -d`.
+
 Estado del enlace y coste por frame: `curl localhost:8000/api/health`
 (`sumo.frame_ms`, `sumo.dropped`).
 
