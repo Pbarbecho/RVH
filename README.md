@@ -47,10 +47,10 @@ results/                salidas de simulación (bind mount del contenedor)
 ## Ejecución en Windows
 
 Windows es la plataforma por defecto de este stack (Docker Desktop ejecuta los
-mismos contenedores Linux vía WSL2) y la opción de arquitectura del
-`docker-compose.yml` ya viene **activa para PC x86_64**
-(`platform: linux/amd64`) — en Windows no hay que cambiar nada del compose.
-Pasos de preparación:
+mismos contenedores Linux vía WSL2). El `docker-compose.yml` no fija
+arquitectura: Docker construye para el procesador del equipo (x86_64 en PC,
+arm64 en Mac Apple Silicon), así que no hay que editar nada. Pasos de
+preparación:
 
 1. **Docker Desktop con WSL2**: activar el *WSL 2 based engine* y la
    integración con la distro Ubuntu (Settings → Resources → WSL integration).
@@ -62,7 +62,7 @@ Pasos de preparación:
    `git config --global core.autocrlf false` — evita que git inyecte `\r` en
    los scripts y el YAML, que se ejecutan dentro de contenedores Linux.
 4. **Verificar la arquitectura**: `uname -m` en la terminal Ubuntu debe decir
-   `x86_64` → la opción activa del compose (`linux/amd64`) es la correcta.
+   `x86_64`; la imagen se construye para esa arquitectura automáticamente.
 5. **Cliente VNC**: para la GUI de SUMO, en vez de `open vnc://127.0.0.1:5901`
    (macOS) usar un visor VNC de Windows (TightVNC, RealVNC) conectado a
    `127.0.0.1:5901`. El visor web es igual: `http://localhost:8081`.
@@ -72,12 +72,11 @@ manuales) es idéntico en Windows, Linux y macOS.
 
 ### Si usas un Mac Apple Silicon (M1/M2/M3/M4)
 
-Único cambio: en `docker-compose.yml`, comentar la línea activa
-`platform: linux/amd64` y descomentar `platform: linux/arm64` (el propio
-compose trae ambas líneas con instrucciones) **antes** de construir. Con la
-arquitectura equivocada Docker emula con QEMU/Rosetta y el build de ns-3 se
-multiplica varias veces o falla; cambiarla después obliga a reconstruir desde
-cero. Para la GUI de SUMO en Mac: `open vnc://127.0.0.1:5901`.
+No hay que cambiar nada: Docker construye la imagen para arm64 de forma
+nativa (no fijar `platform: linux/amd64`, que obligaría a emular con Rosetta y
+el build de ns-3 se multiplicaría varias veces o fallaría). Las imágenes del
+visor en GHCR son multi-arquitectura. Para la GUI de SUMO en Mac:
+`open vnc://127.0.0.1:5901`.
 
 ## Replicar desde cero
 
@@ -114,8 +113,8 @@ cero. Para la GUI de SUMO en Mac: `open vnc://127.0.0.1:5901`.
 
    ```bash
    cd van3twin-docker
-   # PC Windows/Linux x86_64 (en Mac Apple Silicon: --platform linux/arm64)
-   docker build --platform linux/amd64 \
+   # arquitectura nativa del equipo (amd64 en PC, arm64 en Mac Apple Silicon)
+   docker build \
      --build-arg VAN3TWIN_REPO=https://github.com/Pbarbecho/VaN3TwinGEO.git \
      -t van3twin:jammy .
    ```
@@ -123,6 +122,7 @@ cero. Para la GUI de SUMO en Mac: `open vnc://127.0.0.1:5901`.
 4. **Levantar y probar**:
 
    ```bash
+   docker compose --profile visor pull backend frontend   # imágenes del visor (GHCR)
    docker compose --profile visor up -d       # van3twin + visor (:8081)
    docker compose exec van3twin bash
    ./ns3 run "v2v-emergencyVehicleAlert-80211p --sumo-gui=false --met-sup=true --sumo-updates=0.1 --num-traci-clients=2"
@@ -170,7 +170,7 @@ alumnos: [`docs/ACTUALIZACION_2026-09.md`](docs/ACTUALIZACION_2026-09.md)):
 
 ```bash
 git pull
-docker compose --profile visor build --no-cache backend frontend   # visor nuevo
+docker compose --profile visor pull backend frontend               # visor nuevo (imágenes de GHCR)
 docker compose --profile visor up -d
 # parches ns-3 en un volumen ya poblado (el árbol ns-3 del volumen NO es un
 # repo git: sandbox_builder.sh borra .git). Copia los 8 ficheros de

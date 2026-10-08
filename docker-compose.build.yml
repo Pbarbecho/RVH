@@ -1,0 +1,26 @@
+# Override OPCIONAL: construir las imágenes del visor localmente (clonando el
+# repo SUMO_GEO durante el build, como antes de 2026-10) en vez de descargarlas
+# de ghcr.io. Útil sin acceso a GHCR o para probar un fork/rama propia:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml \
+#       --profile visor build --no-cache backend frontend
+#   docker compose --profile visor up -d
+#
+# SUMO_GEO_REF (en .env) elige la rama/tag a clonar; SUMO_GEO_REPO, el repo.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: sumo-geo.Dockerfile
+      target: backend
+      args:
+        SUMO_GEO_REPO: ${SUMO_GEO_REPO:-https://github.com/Pbarbecho/SUMO_GEO.git}
+        SUMO_GEO_REF: ${SUMO_GEO_REF:-main}
+  frontend:
+    build:
+      context: .
+      dockerfile: sumo-geo.Dockerfile
+      target: frontend
+      args:
+        SUMO_GEO_REPO: ${SUMO_GEO_REPO:-https://github.com/Pbarbecho/SUMO_GEO.git}
+        SUMO_GEO_REF: ${SUMO_GEO_REF:-main}

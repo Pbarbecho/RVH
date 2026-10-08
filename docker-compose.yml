@@ -37,23 +37,20 @@ services:
       dockerfile: Dockerfile
       args:
         GRPC_VERSION: v1.60.0
-        VAN3TWIN_REF: master
+        # rama/tag del fork a clonar; se fija por curso en .env (VAN3TWIN_REF)
+        VAN3TWIN_REF: ${VAN3TWIN_REF:-master}
         # fork con la integración SUMO-GEO incluida (parches en master)
         VAN3TWIN_REPO: https://github.com/Pbarbecho/VaN3TwinGEO.git
 
     image: van3twin:jammy
 
     # -------------------------------------------------------------------
-    # platform: arquitectura de la imagen — debe coincidir con el procesador
-    # del PC (verificar con `uname -m` en la terminal Ubuntu/WSL2 o macOS):
-    #   * x86_64  -> linux/amd64  (PC Windows/Linux Intel-AMD, Mac Intel)
-    #   * arm64   -> linux/arm64  (Mac Apple Silicon M1/M2/M3/M4)
-    # Con la arquitectura equivocada Docker emula con QEMU/Rosetta: el build
-    # de ns-3 (1-3 h nativo) se multiplica varias veces o falla. Cambiarla
-    # despues de construir obliga a reconstruir desde cero.
+    # Arquitectura: SIN `platform:` Docker construye para el procesador del
+    # equipo (amd64 en PC Windows/Linux, arm64 en Mac Apple Silicon), que es
+    # justo lo que se quiere: el build de ns-3 (1-3 h) emulado se multiplica
+    # varias veces o falla. Solo haría falta forzarla para usar esta imagen
+    # ya construida en otra arquitectura (añadir `platform:` en un override).
     # -------------------------------------------------------------------
-    #platform: linux/amd64          # PC Windows/Linux x86_64 (descomentar y comentar la de abajo)
-    platform: linux/arm64        # ACTIVA: Mac Apple Silicon
 
     container_name: van3twin
     hostname: van3twin
@@ -130,10 +127,12 @@ services:
     # el socket UDP 48110 del visualizador es interno al contenedor y no
     # necesita publicarse.
     # -------------------------------------------------------------------
+    # Todos los puertos se publican SOLO en localhost: el portátil de un
+    # alumno en la WiFi del campus no debe exponer el visor ni el VNC.
     ports:
       # vehicle-visualizer en el 8080 del Mac (como documenta la guía).
       # OJO: no usar 8081 aquí — lo ocupa el frontend de SUMO-GEO.
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
       # VNC para la GUI sin XQuartz (Xvfb + x11vnc dentro del contenedor,
       # arrancados por el `command`). Se abre en el Mac con vnc://127.0.0.1:5901
       # (app integrada "Compartir pantalla"). Solo escucha en localhost.
@@ -142,10 +141,14 @@ services:
       # ("bind: address already in use"). Dentro del contenedor sigue
       # siendo 5900.
       - "127.0.0.1:5901:5900"
-      # GEO SUMO WEB en modo vivo: servir ns-3-dev por HTTP para que la app
-      # relea los CSV de --csv-log durante la simulación. Dentro del
-      # contenedor:  cd ~/VaN3Twin/ns-3-dev && python3 -m http.server 8090
-      - "127.0.0.1:8090:8090"
+
+    # El EVA con `verbose` escribe cientos de MB de log: acotar el json-file
+    # del demonio (docker compose logs sigue funcionando, solo rota).
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
 
     # -------------------------------------------------------------------
     # Recursos: la compilación/simulación de ns-3 es intensiva.
@@ -171,36 +174,40 @@ services:
   # TraCI multi-cliente al SUMO que lanza ns-3 (puertos 3400-3410) y lee la
   # geometría del volumen ns3-workspace.
   #
-  # AUTOCONTENIDO (2026-08-29): las imágenes clonan el repo SUMO_GEO durante
-  # el build (sumo-geo.Dockerfile) — basta clonar van3twin-docker. Para traer
-  # los últimos cambios tras un push del repo SUMO_GEO:
-  #   docker compose --profile visor build --no-cache backend frontend && \
+  # IMÁGENES PRECONSTRUIDAS (2026-10): el repo SUMO_GEO publica en cada push
+  # ghcr.io/pbarbecho/sumo-geo-backend y -frontend (amd64 + arm64) con una
+  # GitHub Action. Actualizar el visor es:
+  #   docker compose --profile visor pull backend frontend && \
   #   docker compose --profile visor up -d
-  # Desarrollo con el repo LOCAL (editar y recargar): docker-compose.dev.yml
-  # (se activa con COMPOSE_FILE en el .env local, ver ese fichero).
+  # SUMO_GEO_TAG en .env fija una versión concreta (main, vX.Y.Z o sha-…).
+  # Construir las imágenes localmente (sin internet a GHCR, o con un fork):
+  #   docker compose -f docker-compose.yml -f docker-compose.build.yml \
+  #       --profile visor build --no-cache backend frontend
   # ---------------------------------------------------------------------------
   backend:
     profiles: [visor]
-    build:
-      context: .
-      dockerfile: sumo-geo.Dockerfile
-      target: backend
-      args:
-        SUMO_GEO_REPO: https://github.com/Pbarbecho/SUMO_GEO.git
-        SUMO_GEO_REF: main
+    image: ghcr.io/pbarbecho/sumo-geo-backend:${SUMO_GEO_TAG:-main}
+    restart: unless-stopped
     depends_on:
       - van3twin
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=3)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     environment:
       APP_SUMO_MODE: remote
       APP_SUMO_HOST: van3twin         # nombre del servicio en esta misma red
       APP_SUMO_PORT: "3400"           # el ejemplo EVA fija SumoPort=3400
       APP_SUMO_PORT_SCAN: "10"        # probar 3400-3410 (ns-3 corre el puerto si hay TIME_WAIT)
       APP_SUMO_ORDER: "2"             # ns-3 es el cliente 1; el visor, el 2
-      # Escenario Cuenca (copiar mapa_cuenca/cuenca a results/: queda en
-      # /replay dentro del backend). Escenario EVA por defecto:
-      #APP_NET_FILE: /ns3/ns-3-dev/src/automotive/examples/sumo_files_v2v_map/map.net.xml
-      APP_NET_FILE: /replay/cuenca/cuenca.net.xml
-      APP_POLY_FILE: /no_poly.xml     # inexistente a propósito: evita el fallback al .sumocfg
+      # Mapa que dibuja el visor: debe ser el del escenario que corre ns-3.
+      # Por defecto el del ejemplo EVA (sumo_files_v2v_map, dentro del
+      # volumen). Para el escenario Cuenca (copiado a results/cuenca):
+      #   SUMO_GEO_NET=/replay/cuenca/cuenca.net.xml  en .env
+      APP_NET_FILE: ${SUMO_GEO_NET:-/ns3/ns-3-dev/src/automotive/examples/sumo_files_v2v_map/map.net.xml}
+      APP_POLY_FILE: ${SUMO_GEO_POLY:-/no_poly.xml}   # inexistente a propósito: evita el fallback al .sumocfg
       APP_STEP_LENGTH: "0.5"          # seg simulados por frame; 0.5 + interpolación en el
                                       # frontend = movimiento fluido (1.0 se veía a saltos)
       APP_MAX_FPS: "10"
@@ -220,21 +227,17 @@ services:
       - ns3-workspace:/ns3:ro
       - ./results:/replay:ro
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   frontend:
     profiles: [visor]
-    build:
-      context: .
-      dockerfile: sumo-geo.Dockerfile
-      target: frontend
-      args:
-        SUMO_GEO_REPO: https://github.com/Pbarbecho/SUMO_GEO.git
-        SUMO_GEO_REF: main
+    image: ghcr.io/pbarbecho/sumo-geo-frontend:${SUMO_GEO_TAG:-main}
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy   # nginx arranca con el backend ya respondiendo (sin 502)
     ports:
-      - "8081:80"
+      - "127.0.0.1:8081:80"
 
 # Volumen nombrado del árbol ns-3 (nombre real: van3twin_ns3-workspace).
 # Lo comparten van3twin (lectura/escritura) y el backend del visor (RO).

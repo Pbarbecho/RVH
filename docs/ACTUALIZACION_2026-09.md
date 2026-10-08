@@ -39,25 +39,33 @@ git pull
 Si `git pull` se queja de cambios locales: `git stash`, `git pull`,
 `git stash pop`.
 
-Comprueba la línea `platform:` del `docker-compose.yml`: debe estar activa
-`linux/amd64` en PC Windows/Linux y `linux/arm64` en Mac Apple Silicon (M1-M4).
+El `docker-compose.yml` ya no lleva la línea `platform:`: Docker usa la
+arquitectura del equipo (PC o Mac Apple Silicon) sin editar nada. Si tenías la
+línea cambiada a mano, `git stash drop` descarta ese cambio antiguo.
 
 ---
 
-## 2. Reconstruir el visor (3-5 min)
+## 2. Actualizar el visor (1-2 min)
 
-Las imágenes `backend` y `frontend` clonan el repo SUMO_GEO al construirse: hay
-que reconstruirlas **sin caché** para traer el código nuevo, y **las dos a la
-vez** (hablan un protocolo nuevo y no funcionan mezcladas con versiones
-antiguas).
+Desde octubre de 2026 las imágenes del visor (`backend` y `frontend`) ya vienen
+construidas en GitHub Container Registry (`ghcr.io/pbarbecho/sumo-geo-*`) para
+PC y Mac: no hay que compilar nada, solo descargarlas. **Las dos a la vez**
+(hablan un protocolo nuevo y no funcionan mezcladas con versiones antiguas).
 
 ```bash
-docker compose --profile visor build --no-cache backend frontend
+docker compose --profile visor pull backend frontend
 docker compose --profile visor up -d
 ```
 
-Este paso **no** reconstruye la imagen `van3twin` (la de ns-3, que tarda
-horas): solo el visor.
+Este paso **no** toca la imagen `van3twin` (la de ns-3): solo el visor.
+
+Si `pull` falla por falta de internet hacia `ghcr.io`, las imágenes se pueden
+construir localmente como antes:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.build.yml --profile visor build --no-cache backend frontend
+docker compose --profile visor up -d
+```
 
 Comprobación:
 
@@ -65,8 +73,7 @@ Comprobación:
 curl localhost:8000/api/health
 ```
 
-Debe devolver `"proto":2`. Si devuelve otra cosa, repite el paso con
-`--no-cache`.
+Debe devolver `"proto":2`. Si devuelve otra cosa, repite el `pull` y el `up -d`.
 
 ---
 
@@ -162,7 +169,7 @@ Debe imprimir un número mayor que 0.
 |---|---|---|
 | No se ven vehículos, o la consola del navegador marca errores tras actualizar | `app.js` antiguo en caché, o backend y frontend de versiones distintas | Ctrl+Shift+R; comprueba que reconstruiste **las dos** imágenes (paso 2) |
 | `http://localhost:8081` da error 502 | nginx arrancó antes que el backend | Espera 10-20 s y recarga |
-| `/api/health` no devuelve `"proto":2` | La imagen `backend` sigue siendo la antigua | Repite el paso 2 con `--no-cache` |
+| `/api/health` no devuelve `"proto":2` | La imagen `backend` sigue siendo la antigua | Repite el paso 2 (`pull` y `up -d`) |
 | `apply-ns3-patches.sh` dice que el contenedor no está en marcha | Falta `docker compose up -d`, o estás en otra carpeta | Arranca el contenedor y ejecuta el script desde `van3twin-docker` |
 | `./ns3 build` termina con `error:` | Conflicto con cambios tuyos en esos ficheros, o compilación interrumpida | Envía las 30 líneas anteriores al profesor; mientras tanto `./tools/revert-ns3-patches.sh` |
 | `grep -c VehicleSnapshot` imprime 0 | Los parches no se copiaron antes de compilar | Repite el paso 3 |
