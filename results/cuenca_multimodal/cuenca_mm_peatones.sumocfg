@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Escenario multimodal de Cuenca. SUMO / sumo-gui / visor sin ns-3: lo mismo más los peatones. -->
+<configuration>
+    <input>
+        <net-file value="cuenca_mm.net.xml"/>
+        <route-files value="cuenca_mm.rou.xml,cuenca_mm.peatones.rou.xml"/>
+        <additional-files value="cuenca_mm.ptstops.xml,cuenca_mm.poly.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="1200"/>
+        <step-length value="1"/>
+    </time>
+    <processing>
+        <ignore-route-errors value="true"/>
+        <time-to-teleport value="120"/>
+    </processing>
+    <report>
+        <no-step-log value="true"/>
+    </report>
+</configuration>

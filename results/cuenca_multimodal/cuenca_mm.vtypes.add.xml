@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tipos usados por randomTrips/duarouter para validar las rutas. Los tipos
+     definitivos se escriben dentro de cuenca_mm.rou.xml (make_routes.py). -->
+<additional>
+    <vTypeDistribution id="car_mix">
+        <vType id="passenger" vClass="passenger" probability="0.75"/>
+        <vType id="motorcycle" vClass="motorcycle" probability="0.18"/>
+        <vType id="bus" vClass="bus" probability="0.07" length="12"/>
+    </vTypeDistribution>
+    <vType id="bicycle" vClass="bicycle"/>
+</additional>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2026-10-21 15:28:01 by Eclipse SUMO netconvert Version 1.12.0
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <type-files value="/tmp/claude-0/-home-user/043b4bd4-9814-54c6-a7a9-ef28bb8183cb/scratchpad/sumo112/lib/python3.11/site-packages/sumo/data/typemap/osmNetconvert.typ.xml,/tmp/claude-0/-home-user/043b4bd4-9814-54c6-a7a9-ef28bb8183cb/scratchpad/sumo112/lib/python3.11/site-packages/sumo/data/typemap/osmNetconvertPedestrians.typ.xml,/tmp/claude-0/-home-user/043b4bd4-9814-54c6-a7a9-ef28bb8183cb/scratchpad/sumo112/lib/python3.11/site-packages/sumo/data/typemap/osmNetconvertBicycle.typ.xml"/>
+        <osm-files value="../cuenca/map.osm"/>
+    </input>
+
+    <output>
+        <output-file value="cuenca_mm.net.xml"/>
+        <output.street-names value="true"/>
+        <ptstop-output value="cuenca_mm.ptstops.xml"/>
+        <ptline-output value="cuenca_mm.ptlines.xml"/>
+        <ptline-clean-up value="true"/>
+    </output>
+
+    <projection>
+        <proj.utm value="true"/>
+    </projection>
+
+    <processing>
+        <geometry.remove value="true"/>
+        <roundabouts.guess value="true"/>
+    </processing>
+
+    <tls_building>
+        <tls.discard-simple value="true"/>
+        <tls.join value="true"/>
+        <tls.guess-signals value="true"/>
+    </tls_building>
+
+    <ramp_guessing>
+        <ramps.guess value="true"/>
+    </ramp_guessing>
+
+    <edge_removal>
+        <remove-edges.isolated value="true"/>
+    </edge_removal>
+
+    <junctions>
+        <junctions.join value="true"/>
+    </junctions>
+
+    <pedestrian>
+        <sidewalks.guess value="true"/>
+        <crossings.guess value="true"/>
+        <walkingareas value="true"/>
+    </pedestrian>
+
+    <formats>
+        <osm.bike-access value="true"/>
+        <osm.sidewalks value="true"/>
+    </formats>
+
+    <report>
+        <no-warnings value="true"/>
+        <aggregate-warnings value="5"/>
+    </report>
+
+</configuration>
+-->
+
+<ptLines xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/ptlines_file.xsd">
+    <ptLine id="9562447" name="Cuatro Ríos Ida" line="Linea 1" type="tram" vClass="tram" completeness="0.06">
+        <route edges="676078880#0 676078880#1 676078880#2 676078880#3 676078880#4 676078880#5 676078880#6 676078880#7 676078880#8 676078880#10 676078880#11 676078880#12 676078880#13 676078880#14 676078880#15 676078880#16"/>
+        <busStop id="7563926085" name="Tranvía - Nº 12s - Santo Domingo"/>
+    </ptLine>
+    <ptLine id="9562448" name="Cuatro Ríos Vuelta" line="Linea 1" type="tram" vClass="tram" completeness="0.26">
+        <busStop id="7564010385" name="Tranvía - Nº 09n - Parque del Molinero"/>
+        <busStop id="7564009787" name="Tranvía - Nº 10n - Sector la Cuadra"/>
+        <busStop id="7564009888" name="Tranvía - Nº 11n - Convención del 45"/>
+        <busStop id="7564010185" name="Tranvía - Nº 12n - M. 3 de Noviembre"/>
+        <busStop id="7564009887" name="Tranvía - Nº 13n - Padre Aguirre"/>
+    </ptLine>
+</ptLines>

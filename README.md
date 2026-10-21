@@ -219,6 +219,22 @@ y ejecuta `docker compose --profile visor up -d`: el backend se recrea en
 segundos con el mapa nuevo (el resto de contenedores no se toca). Para volver
 al EVA, borra la línea y repite el `up -d`.
 
+### Escenario multimodal listo: `results/cuenca_multimodal`
+
+Centro de Cuenca con **aceras, calles peatonales, pasos de cebra, carriles
+bici y el Tranvía de los Cuatro Ríos**, generado con SUMO 1.12 y probado sin
+teletransportes. Trae 240 vehículos para ns-3 (coches, motos, buses, bicis,
+tranvías y 3 ambulancias para la aplicación EVA) y 450 peatones solo para
+sumo-gui, porque el ejemplo EVA no admite personas. Para usarlo, pon en `.env`:
+
+```bash
+SUMO_GEO_NET=/replay/cuenca_multimodal/cuenca_mm.net.xml
+SUMO_GEO_POLY=/replay/cuenca_multimodal/cuenca_mm.poly.xml
+```
+
+El comando de ns-3, la regeneración y las limitaciones están en
+[`results/cuenca_multimodal/README.md`](results/cuenca_multimodal/README.md).
+
 ### Escenario propio con realismo 3D: `build_city.sh`
 
 El realismo del visor (edificios con altura real, veredas con bordillo, pasos
