@@ -322,6 +322,24 @@ si mejoras la red con el paso anterior, hazlo antes de lanzar la simulación.
 Estado del enlace y coste por frame: `curl localhost:8000/api/health`
 (`sumo.frame_ms`, `sumo.dropped`).
 
+**El visor se queda en "esperando a SUMO" aunque ns-3 diga "waiting for 2
+clients".** Casi siempre hay un **SUMO huérfano** de una corrida anterior
+cortada con Ctrl+C: ns-3 muere, pero su SUMO sigue vivo esperando al segundo
+cliente, y la corrida nueva abre el puerto siguiente (3401, 3402…). Desde el
+Mac/PC:
+
+```bash
+docker compose exec van3twin bash -c 'ps aux | grep "[s]umo -c"'   # ¿cuántos SUMO hay?
+docker compose exec van3twin pkill -x sumo                          # matar huérfanos
+docker compose logs --tail 20 backend                               # qué intenta el visor
+```
+
+Después relanza `./ns3 run …`. El visor (imágenes desde `sha-` de octubre
+2026) detecta por sí solo un SUMO que acepta la conexión pero no responde,
+lo anota en el log y prueba el siguiente puerto; aun así conviene matar los
+huérfanos, porque consumen CPU y confunden. Tras cada Ctrl+C a ns-3, ejecuta
+el `pkill -x sumo`.
+
 El flujo completo (pasos A-B-C, modo paso a paso, panel PHY, RSSI real con
 `signal-rx.csv`, solución de problemas) está en
 `Intergracion SUMO 3D WEB VAN3TWIN/Manual_Simulacion_VaN3Twin_SUMO_GEO.pdf`;
