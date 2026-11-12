@@ -6,6 +6,10 @@ cd "$(dirname "$0")/.."
 SVC=van3twin
 NS3=/home/vanet/VaN3Twin/ns-3-dev
 BACKUP=/home/vanet/ns3-patches-backup.tar
+if ! docker compose ps --status running --services 2>/dev/null | grep -qx "$SVC"; then
+  echo "El contenedor '$SVC' no está en marcha: docker compose up -d" >&2
+  exit 1
+fi
 docker compose exec -T "$SVC" bash -c "
   set -e; cd $NS3
   [ -f $BACKUP ] || { echo 'No hay copia de seguridad ($BACKUP): nada que revertir'; exit 1; }

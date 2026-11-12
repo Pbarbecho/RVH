@@ -2,7 +2,9 @@
 """Inject <param key="height"> into building polygons from OSM tags.
 
 height = OSM `height` tag, else `building:levels` x 3 m, else a default.
-polyconvert keeps the OSM way id as the poly id, so matching is by id.
+polyconvert keeps the OSM way id as the poly id (with a '#n' suffix when a
+way matches several types), so matching is by id without the suffix. Buildings
+mapped as multipolygon relations take the height from the relation's tags.
 
 Usage: python enrich_heights.py <osm_file> <poly_file>  (edits poly_file in place)
 """
@@ -15,10 +17,23 @@ DEFAULT_HEIGHT_M = 10.0
 
 def main(osm_path: str, poly_path: str) -> None:
     heights: dict[str, float] = {}
-    for way in ET.parse(osm_path).getroot().iter("way"):
-        tags = {t.get("k"): t.get("v") for t in way.findall("tag")}
+    root = ET.parse(osm_path).getroot()
+    # relaciones multipolygon con las etiquetas del edificio en la relación:
+    # sus ways "outer" heredan la altura (polyconvert emite un poly por way)
+    rel_tags: dict[str, dict] = {}
+    for rel in root.iter("relation"):
+        tags = {t.get("k"): t.get("v") for t in rel.findall("tag")}
         if "building" not in tags and "building:part" not in tags:
             continue
+        for m in rel.findall("member"):
+            if m.get("type") == "way" and m.get("role", "outer") in ("outer", ""):
+                rel_tags.setdefault(m.get("ref"), tags)
+    for way in root.iter("way"):
+        tags = {t.get("k"): t.get("v") for t in way.findall("tag")}
+        if "building" not in tags and "building:part" not in tags:
+            tags = rel_tags.get(way.get("id"))
+            if tags is None:
+                continue
         h = None
         if tags.get("height"):
             try:
@@ -37,7 +52,7 @@ def main(osm_path: str, poly_path: str) -> None:
     for poly in tree.getroot().iter("poly"):
         if not (poly.get("type", "") or "").startswith("building"):
             continue
-        h = heights.get(poly.get("id"), DEFAULT_HEIGHT_M)
+        h = heights.get(poly.get("id", "").split("#")[0], DEFAULT_HEIGHT_M)
         existing = [p for p in poly.findall("param") if p.get("key") == "height"]
         if existing:
             existing[0].set("value", str(h))

@@ -24,3 +24,9 @@ sync-mac-edits.sh
 
 # ejemplos de respaldo de escenarios SUMO (solo locales)
 results/backup-examples/
+
+# salidas de SUMO (se regeneran en cada corrida)
+results/**/co2.xml
+results/**/fcd.xml
+results/**/tripinfo.xml
+results/**/*.alt.xml

@@ -4,20 +4,11 @@
         <net-file value="cuenca.net.xml"/>
         <route-files value="cuenca_mixed.rou.xml"/>
         <additional-files value="cuenca.poly.xml"/>
-    </input>    
-    
-    <output>
-        <emission-output value="co2.xml"/>
-    	<tripinfo-output value="tripinfo.xml"/>
-    	<fcd-output value="fcd.xml"/>
-     </output>
+    </input>
 
-<emissions>
-	<device.emissions.probability value="1"/>
-</emissions>
-
-    
-    <processing>
+    <!-- Sin salidas: ns-3 no las necesita y co2/fcd pesaban 30 MB por corrida.
+         Para emisiones/FCD usa cuenca_mixed_salidas.sumocfg -->
+<processing>
         <ignore-route-errors value="true"/>
     </processing>    
     <time>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Igual que cuenca.sumocfg pero con salidas de emisiones, tripinfo y FCD (ficheros grandes,
+     ignorados por git). Para sumo/sumo-gui, no para ns-3. -->
+<configuration> 
+    <input>
+        <net-file value="cuenca.net.xml"/>
+        <route-files value="cuenca.rou.xml"/>
+        <additional-files value="cuenca.poly.xml"/>
+    </input>    
+    
+    <output>
+        <emission-output value="co2.xml"/>
+    	<tripinfo-output value="tripinfo.xml"/>
+    	<fcd-output value="fcd.xml"/>
+     </output>
+
+<emissions>
+	<device.emissions.probability value="1"/>
+</emissions>
+
+    
+    <processing>
+        <ignore-route-errors value="true"/>
+    </processing>    
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="1"/>
+    </time>
+</configuration> 

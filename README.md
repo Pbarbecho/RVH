@@ -179,6 +179,28 @@ docker compose --profile visor up -d
 # deshacer: ./tools/revert-ns3-patches.sh
 ```
 
+### Correcciones de noviembre 2026 (revisión de escenarios y ns-3)
+
+Revisión completa de escenarios, generadores e integración ns-3; detalle y
+tabla de hallazgos en [`docs/REVISION_2026-11.md`](docs/REVISION_2026-11.md).
+Lo más visible: **SUMO ya no queda huérfano** tras un Ctrl+C a `./ns3 run`,
+la conexión TraCI reintenta hasta 90 s, el CPM funciona con tranvías, los
+buses/tranvías/bicis/motos llevan su `StationType` ETSI en las CAM, y los
+sumocfg de `results/cuenca` ya no escriben 30 MB de salidas por corrida. Para
+aplicarlo a un contenedor existente:
+
+```bash
+git pull
+docker compose --profile visor pull backend frontend && docker compose --profile visor up -d
+./tools/apply-ns3-patches.sh        # detecta la versión y recompila (10-30 min)
+```
+
+**ns-3 muestra dos "client connected" pero no avanza.** Es normal si no hay
+ningún navegador con el visor abierto: sin visores el backend no pide pasos a
+SUMO para que ns-3 no simule a ciegas. Abre `http://localhost:8081` y arranca.
+Para que avance aunque nadie mire, descomenta `APP_HOLD_WITHOUT_VIEWERS:
+"false"` en `docker-compose.yml`.
+
 ### Para los alumnos: cómo se actualiza el visor a partir de ahora
 
 Las imágenes del visor (`backend` y `frontend`) ya vienen construidas en
@@ -312,7 +334,7 @@ sumocfg por línea de órdenes, y `results/` está montado en el contenedor:
 ```bash
 docker compose exec van3twin ./ns3 run "v2v-emergencyVehicleAlert-80211p \
   --sumo-folder=/home/vanet/results/cuenca/ --mob-trace=cuenca.rou.xml \
-  --sumo-config=/home/vanet/results/cuenca/cuenca.sumocfg \
+  --sumo-config=/home/vanet/results/cuenca/cuenca.sumocfg --sim-time=3600 \
   --sumo-gui=false --met-sup=true --num-traci-clients=2"
 ```
 

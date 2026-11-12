@@ -23,8 +23,8 @@ con toda la red no motorizada y el **Tranvía de los Cuatro Ríos**. Generado co
 | **Total = nodos ns-3** | **240** |
 | Peatones (solo SUMO / sumo-gui, ver abajo) | 450 |
 
-Comprobado en SUMO 1.12: los 240 vehículos se insertan, sin teletransportes ni
-colisiones, y los tranvías cumplen todas sus paradas.
+Comprobado en SUMO 1.12 (fin 1500 s): los 240 vehículos se insertan, sin
+teletransportes ni colisiones, y los tranvías cumplen todas sus paradas.
 
 ## Ficheros
 
